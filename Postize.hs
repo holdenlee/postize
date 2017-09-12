@@ -13,6 +13,8 @@ import Data.Char
 import qualified Data.Map.Strict as M
 import Data.Maybe
 import Data.String.Utils
+--import qualified Data.Text as T
+--import Data.Time
 import Data.Time.Clock
 import Data.Time.Calendar
 
@@ -72,7 +74,7 @@ makeDocs' m = \case
                           then 
                               let 
                                   (curPost, restOfPosts) = splitAtCond isStop rest
-                                  t = extractTitle h
+                                  t = trim $ extractTitle h
                                   curPost' = unlines $ map demoteHeader curPost
                               in
                                 makeDocs' (addDoc (Doc {_title=t, _body=curPost'}) m) restOfPosts
@@ -85,6 +87,10 @@ makeDocs' m = \case
 makeDocs :: [String] -> M.Map String Doc
 makeDocs = makeDocs' M.empty
 
+trim :: String -> String
+trim = f . f
+   where f = reverse . dropWhile isSpace
+
 makeDocHeader :: Doc -> IO String
 makeDocHeader doc = 
     do 
@@ -92,10 +98,12 @@ makeDocHeader doc =
       return $ printf "---\ntitle: %s\npublished: %d-%02d-%02d\ntags: none\n---" (_title doc) year month day
 
 makeDocFilename :: Doc -> String
-makeDocFilename doc = (map toLower $ makeReplacements (_title doc))++".md"
+makeDocFilename doc = (makeReplacements (_title doc))++".md"
+--map toLower $ 
 
 makeReplacements :: String -> String
-makeReplacements = replace " " "-" . replace "?" "" . replace "!" ""
+makeReplacements = replace "?" "" . replace "!" ""
+-- replace " " "-" . 
       
 -- either create the doc if it doesn't exist, or open it and write
 writeDoc :: FilePath -> Doc -> IO () 
@@ -114,7 +122,7 @@ main :: IO [()]
 main = do
   args <- getArgs
   let inputF = if (length args >= 1) then args !! 0 else "in.txt"
-  let dir = if (length args >= 2) then args !! 2 else "C:/Users/Owner/Dropbox/website/i/posts/thoughts"
+  let dir = if (length args >= 2) then args !! 1 else "C:/Users/Owner/Dropbox/website/web_private/posts"
   text <- readFile inputF
   let mapOfDocs = makeDocs $ lines text
   mapM (writeDoc dir) $ M.elems mapOfDocs
