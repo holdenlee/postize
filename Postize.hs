@@ -122,7 +122,7 @@ main :: IO [()]
 main = do
   args <- getArgs
   let inputF = if (length args >= 1) then args !! 0 else "in.txt"
-  let dir = if (length args >= 2) then args !! 1 else "C:/Users/Owner/Dropbox/website/web_private/posts"
+  let dir = if (length args >= 2) then args !! 1 else "C:/Users/holden/Dropbox/website/web_private/posts"
   text <- readFile inputF
   let mapOfDocs = makeDocs $ lines text
   mapM (writeDoc dir) $ M.elems mapOfDocs
